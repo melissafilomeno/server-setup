@@ -12,8 +12,10 @@ Scripts for installing apps
 - [x] Git
 - [x] Maven
 - [x] Ansible
-- [ ] Kubernetes
-- [ ] Docker
+- [x] VirtualBox
+- [x] Kubernetes
+- [x] Docker
+- [x] cri-dockerd
 - [ ] Dockerized Keycloak + vault
 - [ ] Dockerized MySql
 - [ ] Dockerized Jenkins
