@@ -14,14 +14,14 @@ Scripts for installing apps
 - [x] Ansible
 - [x] VirtualBox
 - [x] Kubernetes
-- [x] Docker
-- [x] cri-dockerd
-- [ ] Dockerized Keycloak + vault
-- [ ] Dockerized MySql
-- [ ] Dockerized Jenkins
+- [x] helm
+- [ ] Keycloak + vault
+- [ ] MySql
+- [ ] Jenkins
 - [ ] Jenkins Git plugin
 - [ ] Jenkins Ansible plugin
 - [ ] Nexus
-- [ ] Dockerized ES
-- [ ] Dockerized Logstash
-- [ ] Dockerized Kibana
+- [ ] ES
+- [ ] Logstash
+- [ ] Kibana
+- [ ] Mailu

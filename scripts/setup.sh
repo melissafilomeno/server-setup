@@ -2,6 +2,8 @@
 
 source common_setup
 
-install_common_apps
+readonly LOG_FILE_NAME="setup.sh.log"
+
+install_common_apps $LOG_FILE_NAME
 
 exit 0
