@@ -1,6 +1,5 @@
     # install docker
     sudo dnf -y install dnf-plugins-core >> $LOG_FILE_NAME
-    sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo >> $LOG_FILE_NAME
     yes | sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >> $LOG_FILE_NAME
     sudo systemctl enable --now docker >> $LOG_FILE_NAME
     sudo docker run hello-world >> $LOG_FILE_NAME
@@ -35,3 +34,6 @@
 
     # In case of errors with kubeadm init, run below :
     yes | sudo kubeadm reset --cri-socket unix:///var/run/cri-dockerd.sock
+
+    # Disble cri-dockerd
+    sudo systemctl disable --now cri-docker

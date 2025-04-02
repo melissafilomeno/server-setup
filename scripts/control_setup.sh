@@ -36,37 +36,33 @@ install_control_node_apps(){
     helm version >> $LOG_FILE_NAME
 
     #----------------------------------------
-    # Kubernetes cluster initialization (containerd)
+    # Kubernetes cluster initialization
 
-    # prevent issue creating CRI runtime service
-    rm -f /etc/containerd/config.toml
-    systemctl restart containerd
-
-    # IPv4 Forwarding
-cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-iptables  = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-net.ipv4.ip_forward                 = 1
-EOF
-    # 5. Overlay network and bridge netfilter
-cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
-overlay
-br_netfilter
-EOF
-    sudo modprobe overlay
-    sudo modprobe br_netfilter
-    # reboot sysctl
-    sudo sysctl --system
-
-    #Remove cri-dockerd
-    sudo systemctl disable --now cri-docker
+    # initialize Kubernetes control plane
+    sudo kubeadm config images pull
 
     # 1. initialize kubernetes cluster 
     sudo kubeadm init --pod-network-cidr=10.244.0.0/16
     # 2. Start cluster 
+    # 2.1 root
     export KUBECONFIG=/etc/kubernetes/admin.conf
+    # 2.2 non-root
+    mkdir -p $HOME/.kube
+    sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
     # 3. verify
     kubectl cluster-info
+    # deploy a pod network
+    kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
+    # download manifest
+    curl -O https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
+    # adjust CIDR
+    sed -i 's/cidr: 192\.168\.0\.0\/16/cidr: 10.244.0.0\/16/g' custom-resources.yaml
+    # create Calico custom resources
+    kubectl create -f custom-resources.yaml
+
+    # verify
+    kubectl get nodes
 
     # NOTE: In case of errors with kubeadm init, run below :
     yes | sudo kubeadm reset
