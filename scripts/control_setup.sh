@@ -43,12 +43,13 @@ install_control_node_apps(){
 
     # 1. initialize kubernetes cluster 
     sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+    # note join details
     # 2. Start cluster 
-    # 2.1 root
+    # 2.1 root only
     export KUBECONFIG=/etc/kubernetes/admin.conf
-    # 2.2 non-root
+    # 2.2 all (incl. root)
     mkdir -p $HOME/.kube
-    sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
     # 3. verify
     kubectl cluster-info

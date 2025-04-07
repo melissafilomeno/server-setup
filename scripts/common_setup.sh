@@ -87,10 +87,26 @@ EOF
     # check containerd status
     sudo systemctl status containerd.service
 
-    # disable SELINUX 
-    # [TODO] undo and retest
-    sudo setenforce 0 >> $LOG_FILE_NAME
-    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config >> $LOG_FILE_NAME
+    # start firewalld
+    sudo systemctl start firewalld
+    # enable firewalld at startup
+    sudo systemctl enable firewalld
+    # check firewall state
+    firewall-cmd --state
+    # check firewall status
+    systemctl status firewalld
+    # firewall rules
+    sudo firewall-cmd --zone=public --permanent --add-port=6443/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=10250/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=10251/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=10252/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=10255/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=5473/tcp
+    # reload firewall
+    sudo firewall-cmd --reload
+
+    # add kubernetes repository
     cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -101,23 +117,12 @@ gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF >> $LOG_FILE_NAME
 
-    # set firewall rules
-    # [TODO] run after enabling SELINUX
-    sudo firewall-cmd --zone=public --permanent --add-port=6443/tcp
-sudo firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
-sudo firewall-cmd --zone=public --permanent --add-port=10250/tcp
-sudo firewall-cmd --zone=public --permanent --add-port=10251/tcp
-sudo firewall-cmd --zone=public --permanent --add-port=10252/tcp
-sudo firewall-cmd --zone=public --permanent --add-port=10255/tcp
-sudo firewall-cmd --zone=public --permanent --add-port=5473/tcp
-    # reload firewall
-    # [TODO] run after enabling SELINUX
-    sudo firewall-cmd --reload
-
     # install kubernetes
     sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes >> $LOG_FILE_NAME
     kubectl version >> $LOG_FILE_NAME
     kubeadm version >> $LOG_FILE_NAME
+
+    # enable kubelet service
     sudo systemctl enable --now kubelet >> $LOG_FILE_NAME
     systemctl start kubelet >> $LOG_FILE_NAME
 

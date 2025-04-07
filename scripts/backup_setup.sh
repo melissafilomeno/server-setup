@@ -3,6 +3,14 @@
     yes | sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >> $LOG_FILE_NAME
     sudo systemctl enable --now docker >> $LOG_FILE_NAME
     sudo docker run hello-world >> $LOG_FILE_NAME
+    # ------------------------------------------
+    # uninstall docker
+    # stop docker services
+    sudo systemctl stop docker
+    # uninstall docker
+    yes | sudo dnf remove docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin
+    # delete docker data directories
+    sudo rm -rf /var/lib/docker
 
     # install cri-dockerd (manual)
     # 1 - install golang
@@ -27,13 +35,34 @@
     cri-dockerd --version >> $LOG_FILE_NAME
     # 3 - configure cri-dockerd
     sudo kubeadm config images pull --cri-socket unix:///var/run/cri-dockerd.sock >> $LOG_FILE_NAME
+    #--------------------------------------------------------
+    # uninstall cri-dockerd
+    # Disable cri-dockerd
+    sudo systemctl disable --now cri-docker.service
+    # stop cri-docker.service
+    sudo systemctl stop cri-docker.service
+    # remove cri-dockerd
+    sudo rm -rf /etc/systemd/system/cri-docker.service
 
+    #---------------------------------------------------------------
     # Kubernetes cluster initialization (cri-dockerd)
     # 1. initialize kubernetes cluster 
     sudo kubeadm init --cri-socket unix:///var/run/cri-dockerd.sock
-
     # In case of errors with kubeadm init, run below :
     yes | sudo kubeadm reset --cri-socket unix:///var/run/cri-dockerd.sock
+    # ----------------------
 
-    # Disble cri-dockerd
-    sudo systemctl disable --now cri-docker
+    # disable SELINUX 
+    sudo setenforce 0 >> $LOG_FILE_NAME
+    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config >> $LOG_FILE_NAME
+    #----------------------------------------------------------------
+    # undo disabling SELINUX
+    # get SELINUX state
+    getenforce
+    # check current config
+    cat /etc/selinux/config
+    # enable SELINUX (where disabled = current state)
+    sudo sed -i 's/^SELINUX=disabled$/SELINUX=enforcing/' /etc/selinux/config
+    # [MANUAL] reboot
+    # enable SELINUX
+    sudo setenforce 1
