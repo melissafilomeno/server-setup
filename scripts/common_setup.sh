@@ -27,6 +27,7 @@ install_common_apps(){
     sudo dnf install -y "kernel-devel-$(uname -r)" >> $LOG_FILE_NAME
     sudo /sbin/vboxconfig >> $LOG_FILE_NAME
     VBoxManage list ostypes >> $LOG_FILE_NAME
+    vboxmanage --version
 
     # -----------------------------
     # install kubernetes

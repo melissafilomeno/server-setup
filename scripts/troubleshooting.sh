@@ -1,3 +1,5 @@
+# ======== Kubernetes ================
+
 # check kubelet config
 cat /var/lib/kubelet/config.yaml
 kubectl config view
@@ -19,16 +21,32 @@ cat <log_file>
 kubectl get pods
 kubectl get pods --all-namespaces
 
-# list helm releases
-helm list -n <release_name>
-
-# check containerd status
- sudo service containerd status
-
 # troubleshoot start
  kubectl cluster-info dump
 
  # check kubectl config
  kubectl config view
 
- 
+# ============ Containerd ==============
+
+# check containerd status
+ sudo service containerd status
+
+ # ============= Helm =====================
+
+# list helm releases
+helm list -n <release_name>
+
+ # ============== VM ================
+
+# list existing VMs
+VBoxManage list vms
+
+# list running VMs
+VBoxManage list runningvms
+
+# list details of runing VMs
+VBoxManage list -l runningvms
+
+# stop VM 
+VBoxManage controlvm <vm_name> poweroff

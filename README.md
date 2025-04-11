@@ -8,6 +8,9 @@ Scripts for installing apps
 3. Run : sudo su
 4. Run : ./setup.sh or ./control_setup.sh
 
+## Create Centos9 VM
+1. Run ./create_vm_centos9.sh <HOME_DIR>
+
 ## Checklist
 - [x] Java 17
 - [x] Git
