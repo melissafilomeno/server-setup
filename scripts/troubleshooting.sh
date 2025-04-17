@@ -50,3 +50,17 @@ VBoxManage list -l runningvms
 
 # stop VM 
 VBoxManage controlvm <vm_name> poweroff
+
+# get IP
+arp -a
+
+# =============== Firewall ==========
+
+# get zones
+firewall-cmd --get-zones
+
+# get all active zones
+firewall-cmd --get-active-zones
+
+# inspect public zone config
+firewall-cmd --zone=public --list-all
