@@ -1,3 +1,6 @@
+#----------------------------------------------------------------
+# docker
+
 # install docker
 sudo dnf -y install dnf-plugins-core >> $LOG_FILE_NAME
 yes | sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >> $LOG_FILE_NAME
@@ -11,6 +14,9 @@ sudo systemctl stop docker
 yes | sudo dnf remove docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin
 # delete docker data directories
 sudo rm -rf /var/lib/docker
+
+#----------------------------------------------------------------
+# cri-dockerd
 
 # install cri-dockerd (manual)
 # 1 - install golang
@@ -43,15 +49,14 @@ sudo systemctl disable --now cri-docker.service
 sudo systemctl stop cri-docker.service
 # remove cri-dockerd
 sudo rm -rf /etc/systemd/system/cri-docker.service
-
 #---------------------------------------------------------------
 # Kubernetes cluster initialization (cri-dockerd)
 # 1. initialize kubernetes cluster 
 sudo kubeadm init --cri-socket unix:///var/run/cri-dockerd.sock
 # In case of errors with kubeadm init, run below :
 yes | sudo kubeadm reset --cri-socket unix:///var/run/cri-dockerd.sock
-# ----------------------
 
+#----------------------------------------------------------------
 # disable SELINUX 
 sudo setenforce 0 >> $LOG_FILE_NAME
 sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config >> $LOG_FILE_NAME
@@ -68,8 +73,26 @@ sudo sed -i 's/^SELINUX=disabled$/SELINUX=enforcing/' /etc/selinux/config
 sudo setenforce 1
 
 #---------------------------------------------------------------
+# VM creation (without import)
+
 # create VM
 VBoxManage createvm --name Centos9Test --ostype Fedora_64 --register
+
+# configure hardware settings
+VBoxManage modifyvm Centos9Test --cpus 1 --memory 512 --vram 12
+VBoxManage showvminfo Centos9Test | grep "Memory size"
+
+# create a virtual hard disk image
+VBoxManage createhd --filename /home/vdi/CentOS9Test.vdi --size 5120
+
+# add storage controller
+VBoxManage storagectl CentOS9Test --name "SATA Controller" --add sata --bootable on
+
+# attach hard disk to controller
+VBoxManage storageattach CentOS9Test --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium /home/vdi/CentOS9Test.vdi
+
+# add IDE controller for CD/DVD drive
+VBoxManage storagectl Centos9Test --name "IDE Controller" --add ide
 
 # download Centos 9 iso
 wget https://mirrors.centos.org/mirrorlist?path=/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso
@@ -78,3 +101,15 @@ wget https://mirrors.centos.org/mirrorlist?path=/9-stream/BaseOS/x86_64/iso/Cent
 # connect VM drive to host drive
 VBoxManage storageattach Centos9Test --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium "$HOME_DIR/CentOS-Stream-9-latest-x86_64-dvd1.iso"
 VBoxManage showvminfo Centos9Test | grep "IDE Controller"
+
+#------------------------------------------------------------------------
+# Others
+
+# install jdk 17
+yes | sudo dnf install java-17-openjdk.x86_64 >> $log_file_name
+java --version >> $log_file_name
+
+# install git
+yes | sudo dnf install git >> $log_file_name
+git --version >> $log_file_name
+

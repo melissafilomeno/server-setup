@@ -1,46 +1,27 @@
 #!/bin/bash
 
 # Common installation :
-install_common_apps(){
+_install_common_apps(){
 
-    local LOG_FILE_NAME = "$1"
+  local log_file_name = "$1"
+  
+  yes | sudo dnf update
+  
+  # check ssh
+  sudo dnf install openssh-clients openssh-server
 
-    dnf update
+  # -----------------------------
+  # install kubernetes
+  
+  # Add kernel modules (communication)
+  sudo modprobe br_netfilter >> $log_file_name
+  sudo modprobe ip_vs >> $log_file_name
+  sudo modprobe ip_vs_rr >> $log_file_name
+  sudo modprobe ip_vs_wrr >> $log_file_name
+  sudo modprobe ip_vs_sh >> $log_file_name
+  sudo modprobe overlay >> $log_file_name
 
-    # install jdk 17
-    yes | sudo dnf install java-17-openjdk.x86_64 >> $LOG_FILE_NAME
-    java --version >> $LOG_FILE_NAME
-
-    # install git
-    yes | sudo dnf install git >> $LOG_FILE_NAME
-    git --version >> $LOG_FILE_NAME
-
-    # install wget
-    yes | sudo dnf install wget >> $LOG_FILE_NAME
-    wget --version >> $LOG_FILE_NAME
-
-    # install virtualbox
-    wget https://www.virtualbox.org/download/oracle_vbox_2016.asc >> $LOG_FILE_NAME
-    sudo rpm --import oracle_vbox_2016.asc >> $LOG_FILE_NAME
-    wget https://download.virtualbox.org/virtualbox/rpm/el/virtualbox.repo -O /etc/yum.repos.d/virtualbox.repo >> $LOG_FILE_NAME
-    yes | sudo dnf install VirtualBox-7.0 >> $LOG_FILE_NAME
-    sudo dnf install -y "kernel-devel-$(uname -r)" >> $LOG_FILE_NAME
-    sudo /sbin/vboxconfig >> $LOG_FILE_NAME
-    VBoxManage list ostypes >> $LOG_FILE_NAME
-    vboxmanage --version
-
-    # -----------------------------
-    # install kubernetes
-
-    # Add kernel modules (communication)
-    sudo modprobe br_netfilter
-    sudo modprobe ip_vs
-    sudo modprobe ip_vs_rr
-    sudo modprobe ip_vs_wrr
-    sudo modprobe ip_vs_sh
-    sudo modprobe overlay
-
-    # add modules
+# add modules
 cat > /etc/modules-load.d/kubernetes.conf << EOF
 br_netfilter
 ip_vs
@@ -48,67 +29,67 @@ ip_vs_rr
 ip_vs_wrr
 ip_vs_sh
 overlay
-EOF
+EOF >> $log_file_name
 
     # configure sysctl
-    cat > /etc/sysctl.d/kubernetes.conf << EOF
+cat > /etc/sysctl.d/kubernetes.conf << EOF
 net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
+net.bridge.bridge-nf-call-iptables = 1vol
+EOF >> $log_file_name
 
     # reboot sysctl
-    sudo sysctl --system
+    sudo sysctl --system >> $log_file_name
     
     # disable swap
-    sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab >> $LOG_FILE_NAME
-    sudo swapoff -a >> $LOG_FILE_NAME
+    sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab >> $log_file_name
+    sudo swapoff -a >> $log_file_name
 
     # add repo for docker CE packages
-    sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo >> $LOG_FILE_NAME
+    sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo >> $log_file_name
 
     # update package cache
-    sudo dnf makecache
+    sudo dnf makecache >> $log_file_name
 
     # install containerd.io package
-    sudo dnf -y install containerd.io
+    sudo dnf -y install containerd.io >> $log_file_name
 
     # configure containerd
-    sudo sh -c "containerd config default > /etc/containerd/config.toml" ; cat /etc/containerd/config.toml
+    sudo sh -c "containerd config default > /etc/containerd/config.toml" ; cat /etc/containerd/config.toml >> $log_file_name
     # [MANUAL] update [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options] > SystemdCgroup = true
     vi /etc/containerd/config.toml
     # start and enable containerd on reboot
-    sudo systemctl enable --now containerd.service
+    sudo systemctl enable --now containerd.service >> $log_file_name
     
     # reboot
-    sudo systemctl reboot
+    sudo systemctl reboot >> $log_file_name
 
     # [MANUAL] relogin
 
     # check containerd status
-    sudo systemctl status containerd.service
+    sudo systemctl status containerd.service >> $log_file_name
 
     # start firewalld
-    sudo systemctl start firewalld
+    sudo systemctl start firewalld >> $log_file_name
     # enable firewalld at startup
-    sudo systemctl enable firewalld
+    sudo systemctl enable firewalld >> $log_file_name
     # check firewall state
-    firewall-cmd --state
+    firewall-cmd --state >> $log_file_name
     # check firewall status
-    systemctl status firewalld
+    systemctl status firewalld >> $log_file_name
     # firewall rules
-    sudo firewall-cmd --zone=public --permanent --add-port=6443/tcp
-    sudo firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp
-    sudo firewall-cmd --zone=public --permanent --add-port=10250/tcp
-    sudo firewall-cmd --zone=public --permanent --add-port=10251/tcp
-    sudo firewall-cmd --zone=public --permanent --add-port=10252/tcp
-    sudo firewall-cmd --zone=public --permanent --add-port=10255/tcp
-    sudo firewall-cmd --zone=public --permanent --add-port=5473/tcp
+    sudo firewall-cmd --zone=public --permanent --add-port=6443/tcp >> $log_file_name
+    sudo firewall-cmd --zone=public --permanent --add-port=2379-2380/tcp >> $log_file_name
+    sudo firewall-cmd --zone=public --permanent --add-port=10250/tcp >> $log_file_name
+    sudo firewall-cmd --zone=public --permanent --add-port=10251/tcp >> $log_file_name
+    sudo firewall-cmd --zone=public --permanent --add-port=10252/tcp >> $log_file_name
+    sudo firewall-cmd --zone=public --permanent --add-port=10255/tcp >> $log_file_name
+    sudo firewall-cmd --zone=public --permanent --add-port=5473/tcp >> $log_file_name
     # reload firewall
-    sudo firewall-cmd --reload
+    sudo firewall-cmd --reload >> $log_file_name
 
     # add kubernetes repository
-    cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 baseurl=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/
@@ -116,15 +97,15 @@ enabled=1
 gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/v1.32/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-EOF >> $LOG_FILE_NAME
+EOF >> $log_file_name
 
     # install kubernetes
-    sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes >> $LOG_FILE_NAME
-    kubectl version >> $LOG_FILE_NAME
-    kubeadm version >> $LOG_FILE_NAME
+    sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes >> $log_file_name
+    kubectl version >> $log_file_name
+    kubeadm version >> $log_file_name
 
     # enable kubelet service
-    sudo systemctl enable --now kubelet >> $LOG_FILE_NAME
-    systemctl start kubelet >> $LOG_FILE_NAME
+    sudo systemctl enable --now kubelet >> $log_file_name
+    systemctl start kubelet >> $log_file_name
 
 }

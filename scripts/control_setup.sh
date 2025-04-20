@@ -4,7 +4,7 @@ source common_setup
 
 readonly LOG_FILE_NAME="control_setup.sh.log"
 
-install_common_apps $LOG_FILE_NAME
+_install_common_apps $LOG_FILE_NAME
 install_control_node_apps
 
 return 0;
@@ -70,11 +70,9 @@ install_control_node_apps(){
     sudo rm -rf /etc/cni/net.d
     iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
     sudo rm -rf $HOME/.kube
-
     # -------------------------------
 
     # install keycloak helm chart (bitnami)
     helm install my-release oci://registry-1.docker.io/bitnamicharts/keycloak
     
-
 }
