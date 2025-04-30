@@ -20,7 +20,7 @@ kubectl get pods
 kubectl get pods --all-namespaces
 
 # troubleshoot start
- kubectl cluster-info dump
+kubectl cluster-info dump
 
- # check kubectl config
- kubectl config view
+# check kubectl config
+kubectl config view

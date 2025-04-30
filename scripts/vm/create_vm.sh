@@ -6,9 +6,9 @@ EXPORTED_FILE_NAME=$2
 
 # import VM
 # dry-run (shows defaults and configurable options)
-VBoxManage import "$EXPORTED_FILE_NAME" --vsys 0 --vmname "$VM_NAME" --ostype Fedora_64 --memory 512 --dry-run >> $log_file_name
+VBoxManage import "$EXPORTED_FILE_NAME" --vsys 0 --vmname "$VM_NAME" --ostype Fedora_64 --memory 2048 --dry-run >> $log_file_name
 # or final
-VBoxManage import "$EXPORTED_FILE_NAME" --vsys 0 --vmname "$VM_NAME" --ostype Fedora_64 --memory 512 >> $log_file_name
+VBoxManage import "$EXPORTED_FILE_NAME" --vsys 0 --vmname "$VM_NAME" --ostype Fedora_64 --memory 2048 >> $log_file_name
 
 # show VM details
 VBoxManage showvminfo "$VM_NAME" >> $log_file_name

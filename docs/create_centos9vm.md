@@ -8,7 +8,7 @@
     - Name : CentOS9
     - Type : Linux
     - Version : Red Hat (64-bit)
-    - Memory size : 1024
+    - Memory size : 2048
     - Create a virtual hard disk now
     - Hard disk file type : VDI
     - Storage on physical hard disk : Dynamically allocated
@@ -36,21 +36,19 @@
     > Test Login
     > Stop VM
     > Close VirtualBox
-6. Enable copy paste
+6. VirtualBox - Configure Vm
     > Settings > Storage
     - Controller : IDE > disk - click
         - Attributes > Optical Drive - click > Remove disk from virtual drive
-    - open terminal
-        # install epel
-        yes | sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-        # install pre-req libraries (pre-requisites)
-        yes | sudo dnf install gcc kernel-devel-$(uname -r) gcc gcc-c++ make bzip2 elfutils-libelf-devel kernel-headers
-        # mount
-        mount /dev/cdrom /mnt
-        cd /mnt
-        ./VBoxLinuxAdditions.run
-        # [TODO]
-        reboot
+    > Settings > Network > Adapter 1
+        - Attached to : Bridged Adapter
+        - Promiscuous Mode : Allow All
+    > Start VM
+    > Login
+    > Get IP (terminal)
+        - ip addr show
+    > login to VM from putty
+        - run scripts/common_setup.sh
 7. VirtualBox - Export Vm
     > File > Export Virtual Appliance
     - Virtual machines : CentOS9
